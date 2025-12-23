@@ -1,0 +1,44 @@
+{
+  "intents": [
+    {
+      "name": "product_inquiry",
+      "examples": [
+        "Does this camera have 4k recording?",
+        "What is the battery life of the headphones?",
+        "Is the material cotton or polyester?",
+        "How much does the smart watch weigh?",
+        "Can I use this charger with an iPhone?"
+      ]
+    },
+    {
+      "name": "order_issue",
+      "examples": [
+        "Where is my package?",
+        "I haven't received my order yet.",
+        "My tracking number isn't working.",
+        "The package arrived damaged.",
+        "I received the wrong item."
+      ]
+    },
+    {
+      "name": "return_refund",
+      "examples": [
+        "I want to return this item.",
+        "How do I get a refund?",
+        "What is your return policy?",
+        "Can I exchange this for a different size?",
+        "I need to send this back."
+      ]
+    },
+    {
+      "name": "unsupported",
+      "examples": [
+        "What is the capital of France?",
+        "Write me a poem about cats.",
+        "Who won the super bowl?",
+        "Solve this math problem.",
+        "Tell me a joke."
+      ]
+    }
+  ]
+}

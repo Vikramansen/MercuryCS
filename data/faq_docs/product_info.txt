@@ -1,0 +1,19 @@
+# Product Information
+
+## Wireless Headphones X1
+- Battery Life: Up to 30 hours with ANC off, 24 hours with ANC on.
+- Charging: USB-C quick charge (10 min charge = 5 hours playback).
+- Features: Active Noise Cancellation, Transparency Mode, Multipoint Bluetooth.
+- Weight: 250g.
+
+## Smart Watch Pro
+- Display: 1.4 inch AMOLED always-on display.
+- Battery: Up to 7 days typical use.
+- Sensors: Heart rate, SpO2, GPS, Sleep tracking.
+- Water Resistance: 5ATM (swim proof).
+
+## Ergonomic Chair
+- Material: Breathable mesh back, high-density foam seat.
+- Adjustability: Lumbar support, armrest height/angle, seat depth, recline tension.
+- Max Weight Capacity: 300 lbs.
+- Warranty: 5 years.
