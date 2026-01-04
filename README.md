@@ -1,60 +1,47 @@
 # MercuryCS
 
-**MercuryCS** is a multilingual, evaluation-driven conversational AI system for e-commerce customer support, designed to mirror TikTok Shopping use cases.
-
-## Architecture
+A multilingual, RAG-based customer support agent designed for e-commerce.
 
 ![System Architecture](architecture.png)
 
-## Key Features
-- **Intent Classification**: Strictly categorizes queries into `product_inquiry`, `order_issue`, `return_refund`, `shipping_inquiry`, or `unsupported`.
-- **Hard Grounding**: Rejects responses if no relevant context is retrieved. No "best guess" or hallucinations.
-- **Multilingual Flow**: Seamlessly handles non-English queries by translating to English for processing and translating the response back.
-- **Built for Reliability**: Includes a suite of evaluation scripts to measure faithfulness, latency, and fallback rates.
+## Overview
 
-## Tradeoffs
-1.  **Translation Latency vs. Native Support**: We use a translate-process-translate approach.
-    *   *Pro*: Allows using a single, high-quality English embedding model and knowledge base. Simplifies maintenance.
-    *   *Con*: Adds latency (2x translation calls) and potential translation errors.
-2.  **Strict Grounding vs. Helpfulness**: We prioritize correctness over conversational flow.
-    *   *Pro*: Eliminates hallucinations and liability (critical for e-commerce).
-    *   *Con*: System may seem "dumber" if it refuses to answer slightly ambiguous queries that a human could guess.
-3.  **Embedding-Based Classification vs. LLM Classification**:
-    *   *Pro*: Much faster and cheaper. Deterministic behavior for known examples.
-    *   *Con*: Less flexible with nuance than a large LLM.
+MercuryCS handles customer queries in any language by translating them to English, retrieving relevant context from a knowledge base, and generating a grounded response. It prioritizes **correctness** and **safety** over conversational flow, using strict intent classification and hard grounding to prevent hallucinations.
 
-## Failure Cases
-1.  **Translation Loss**: If the user's query loses meaning during translation (e.g., slang, idioms), the intent classifier may fail.
-    *   *Mitigation*: Use higher quality translation models or fine-tune on domain-specific multilingual data.
-2.  **Context Splitting**: If the answer spans multiple chunks that aren't retrieved together, the generator may miss the full answer.
-    *   *Mitigation*: Implement sliding window chunking or hierarchical retrieval.
-3.  **Ambiguous Intents**: Queries like "Can I change it?" could be an order issue or a return.
-    *   *Mitigation*: Implement multi-turn dialogue to ask clarifying questions (not in current scope).
+**Tech Stack:** FastAPI, SentenceTransformers (all-MiniLM-L6-v2), LangDetect, DeepTranslator.
 
-## Why Evaluation Matters More Than Model Size
-In production systems, **reliability is the product**. A 100B parameter model that hallucinates a return policy 1% of the time is worse than a 1B parameter model that admits ignorance.
-- **Faithfulness**: We measure if the answer is strictly derived from the retrieved docs.
-- **Fallback Rate**: We track how often we safely refuse. A high fallback rate on supported intents indicates retrieval failure; a low fallback rate on unsupported intents indicates safety failure.
-- **Latency**: E-commerce users are impatient. We optimize for p99 latency to ensure consistent experience.
+## Quick Start
 
-## Usage
+1.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-### Install Dependencies
+2.  **Run the API:**
+    ```bash
+    uvicorn api.main:app --reload
+    ```
+
+3.  **Test the endpoint:**
+    ```bash
+    curl -X POST "http://localhost:8000/chat" \
+         -H "Content-Type: application/json" \
+         -d '{"query": "Where is my order?", "user_id": "test_user"}'
+    ```
+
+## Evaluation
+
+We track faithfulness, latency, and fallback rates to ensure reliability.
+
+Run the evaluation suite:
 ```bash
-pip install -r requirements.txt
+python run_evals.py
 ```
 
-### Run API
-```bash
-uvicorn api.main:app --reload
-```
+See [EVALUATION_REPORT.md](EVALUATION_REPORT.md) for the latest performance metrics.
 
-### Run Evaluations
-```bash
-python eval/faithfulness.py
-python eval/latency.py
-python eval/fallback_rate.py
-```
+## Technical Decisions
 
-### Evaluation Results
-For a comprehensive analysis of the system's performance across faithfulness, latency, and fallback handling, see the [Evaluation Report](EVALUATION_REPORT.md).
+*   **Translate-Process-Translate**: We translate all inputs to English to maintain a single, high-quality knowledge base and embedding space. This adds ~400ms latency but significantly reduces complexity.
+*   **Embedding-Based Classification**: We use cosine similarity against a set of canonical examples for intent classification. It's faster and more deterministic than LLM-based classification for this specific domain.
+*   **Hard Grounding**: If the retrieval score is below threshold, the system refuses to answer. This is a deliberate choice to avoid liability in e-commerce scenarios.
