@@ -1,5 +1,5 @@
 # MercuryCS Performance Report
-**Date:** January 03, 2026
+**Date:** January 04, 2026
 
 ## Overview
 We ran a comprehensive evaluation of the MercuryCS system to ensure it meets our quality standards for customer support. This report details our findings on accuracy, speed, and safety.
@@ -17,9 +17,9 @@ We tested the system's ability to stick to the provided facts.
 ## 2. System Speed (Latency)
 We measured how fast the API responds to typical user queries.
 
-- **Average Response Time:** 2292ms
-- **Median (P50):** 2063ms
-- **Slowest 1% (P99):** 3734ms
+- **Average Response Time:** 2244ms
+- **Median (P50):** 2122ms
+- **Slowest 1% (P99):** 2724ms
 
 **Takeaway:** The system is performing within acceptable limits, with most responses arriving in about 2 seconds.
 

@@ -2,12 +2,19 @@ import os
 from typing import List, Optional
 from deep_translator import GoogleTranslator
 from langdetect import detect
+import torch
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 class Generator:
-    def __init__(self, prompts_dir: str = "prompts"):
+    def __init__(self, prompts_dir: str = "prompts", model_name: str = "google/flan-t5-small"):
         self.prompts_dir = prompts_dir
         self.response_template = self._load_prompt("response.txt")
         self.fallback_template = self._load_prompt("fallback.txt")
+        
+        print(f"Loading generator model: {model_name}...")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+        print("Model loaded.")
 
     def _load_prompt(self, filename: str) -> str:
         path = os.path.join(self.prompts_dir, filename)
@@ -35,17 +42,25 @@ class Generator:
             return self.translate(self.fallback_template, target_lang)
 
         context_str = "\n\n".join(context)
-        prompt = self.response_template.format(context=context_str, query=query)
-
-        # SIMULATED LLM CALL
-        # In a real system, this would call OpenAI/Gemini/etc.
-        # Here we simulate a grounded response.
+        # Flan-T5 works best with a simple instruction format
+        # modifying the template logic slightly to fit the model better if needed,
+        # but for now, we'll construct a prompt that fits the model's instruction tuning.
         
-        response = f"[Generated Answer based on context]: Based on the information provided, {context[0][:100]}..."
+        # Construct input text for the model
+        input_text = f"Answer based on context:\n{context_str}\n\nQuestion: {query}"
         
-        # For this demo, we'll just return the top retrieved chunk directly.
-        # In production, you'd pass this context to an LLM to generate a natural response.
-        response = f"Here is the relevant information: {context[0]}"
+        # Tokenize and generate
+        inputs = self.tokenizer(input_text, return_tensors="pt", max_length=512, truncation=True)
+        
+        with torch.no_grad():
+            outputs = self.model.generate(
+                inputs.input_ids, 
+                max_length=128, 
+                num_beams=4, 
+                early_stopping=True
+            )
+            
+        response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
         if target_lang != "en":
             response = self.translate(response, target_lang)
@@ -53,5 +68,10 @@ class Generator:
         return response
 
 if __name__ == "__main__":
-    gen = Generator(prompts_dir="../prompts")
-    print(gen.generate("shipping time", ["Standard shipping takes 3-5 days."], "es"))
+    # Ensure correct path when running directly
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    prompts_path = os.path.join(base_dir, "prompts")
+    
+    gen = Generator(prompts_dir=prompts_path)
+    print("Test Generation:")
+    print(gen.generate("shipping time", ["Standard shipping takes 3-5 days."], "en"))

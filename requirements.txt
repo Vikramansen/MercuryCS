@@ -8,3 +8,5 @@ deep-translator
 langdetect
 pytest
 httpx
+transformers
+torch
